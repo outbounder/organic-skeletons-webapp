@@ -31,6 +31,7 @@ describe("reactor test", function(){
     })
     instance.on("HttpServer", function(c){
       expect(c.server).toBeDefined();
+      require("mongoose").connect("localhost", "test-db")
       next() 
     });
     instance.plasma.emit({type: "build", "branch": "plasma"});
@@ -62,7 +63,7 @@ describe("reactor test", function(){
 
   it("fires http request which has to be handled by old-style-action reaction", function(next){
     request.post({
-        uri:"http://127.0.0.1:1337/users/login",
+        uri:"http://127.0.0.1:1337/users/test-login",
         json: {
           "username": "data",
           "password": "test"
@@ -75,7 +76,7 @@ describe("reactor test", function(){
 
   it("fires http request which has to be handled by old-style-action with result", function(next){
     request.get({
-        uri:"http://127.0.0.1:1337/users",
+        uri:"http://127.0.0.1:1337/users/result",
         json: {}
       }, function(err, res, body){
       expect(body).toContain("augmented");
@@ -93,7 +94,18 @@ describe("reactor test", function(){
     })
   })
 
+  it("fires http request which has to be handled by crud reaction", function(next){
+    request.get({
+        uri:"http://127.0.0.1:1337/users/crud/list",
+        json: {}
+      }, function(err, res, body){
+      expect(body.length).toBe(0)
+      next()
+    })
+  })
+
   it("closes", function(){
     instance.emit("kill")
+    require("mongoose").disconnect()
   })
 })

@@ -41,8 +41,9 @@ module.exports = Organel.extend(function(plasma, dna){
       var parsed_url = url.parse(c.req.url)
       var url_path = parsed_url.path; // /something/123123fjkslfj12/asd/12333.asd121
       for(var i = 0; i<this.reactions_cache.length; i++){
-        if(url_path.indexOf(this.reactions_cache[i].url) === 0)
+        if(url_path.indexOf(this.reactions_cache[i].url) === 0){
           matchingReactions.push(this.reactions_cache[i])
+        }
       }
       return matchingReactions
     }
@@ -65,7 +66,7 @@ module.exports = Organel.extend(function(plasma, dna){
               .replace(self.config.reactions.indexname, "")
           self.reactions_cache.push(reaction)
         } catch(err){
-          console.error(err)
+          console.error(err.stack)
         }
       })
     })

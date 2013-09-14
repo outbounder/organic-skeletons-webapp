@@ -12,7 +12,7 @@ var invoke = module.exports.invoke = function(reaction, input, next) {
 
 var transform = module.exports.transform = function(input, trasnformators){
   if(!trasnformators) return input
-
+  // TODO IMPL.
 }
 
 var chain = module.exports.chain = function(reactionsArray) {
@@ -31,7 +31,7 @@ var chain = module.exports.chain = function(reactionsArray) {
   }
 }
 
-module.exports.whenMethod = function(definitions) {
+var whenMethod = module.exports.whenMethod = function(definitions) {
   return function(c, next) {
     invoke(definitions[c.req.method], c, next)
   }
@@ -56,27 +56,58 @@ module.exports.reaction = function(){
   next()
 }
 
-module.exports.fromActions = function(actions, transformers) {
-  var methods = {};
+var fromActions = module.exports.fromActions = function(actions, transformers) {
+  var methods = { GET: {}, POST: {}, PUT: {}, DELETE: {} };
   for(var actionName in actions) {
     var parts = actionName.split(" ")
     var methodName = parts.shift()
     var actionUrl = parts.shift()
     var action = actions[actionName]
     action.url = actionUrl
-    methods[methodName] = action
+    methods[methodName][actionUrl] = action
   }
   return function(c, next) {
-    var reaction = transform(methods[c.req.method], transformers)
-    if(!reaction.url || c.req.url.indexOf(reaction.url) !== -1){
-      if(reaction.length == 2)
-        reaction(c.req, c.res)
-      if(reaction.length == 3)
-        reaction(c.req, c.res, next)
+    var reactions = transform(methods[c.req.method], transformers)
+    for(var url in reactions) {
+      var reaction = reactions[url]
+      if(!reaction.url || c.req.url.indexOf(reaction.url) !== -1){
+        if(reaction.length == 2)
+          return reaction(c.req, c.res)
+        if(reaction.length == 3)
+          return reaction(c.req, c.res, next)
+      }
     }
+    next()
   }
 }
 
 module.exports.improve = function(reaction, improver) {
   return chain([improver, reaction])
+}
+
+var jsonResponse = module.exports.jsonResponse = function(res) {
+  return function(err, data) {
+    if(err) return res.end(err)
+    res.end(JSON.stringify(data))
+  }
+}
+
+module.exports.crud = function(model) {
+  return fromActions({
+    "GET /list": function(req, res, next) {
+      model.find({}).exec(jsonResponse(res))
+    },
+    "GET /:id": function(req, res, next) {
+      model.findById(req.params.id).exec(jsonResponse(res))
+    },
+    "POST /create": function(req, res, next) {
+      model.create(req.body, jsonResponse(res))
+    },
+    "PUT /:id": function(req, res, next){
+      model.updateById(req.body, jsonResponse(res))
+    },
+    "DELETE /:id": function(req, res, next) {
+      model.removeById(req.params.id, jsonResponse(res))
+    }
+  })
 }
