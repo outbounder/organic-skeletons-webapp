@@ -2,12 +2,13 @@ var request = require("request");
 
 describe("reactor test", function(){
   var Cell = require("organic").Cell;
+  var testUser;
 
   it("boots up", function(next){
     instance = new Cell({
       "plasma": {
         "HttpServer": {
-          "source": "plasma/httpServer",
+          "source": "node_modules/organic-httpServer",
           "port": 1337,
           "ip": "127.0.0.1",
           "emit": {
@@ -16,7 +17,7 @@ describe("reactor test", function(){
           }
         },
         "HttpReactor": {
-          "source": "plasma/httpReactor",
+          "source": "node_modules/organic-httpReactor",
           "capture": {
             "type": "HttpRequest"
           },
@@ -25,7 +26,8 @@ describe("reactor test", function(){
             "extname": ".js",
             "indexname": "index"
           },
-          "endReactions": ["context/http/reactions/notfound"]
+          "endReactions": ["context/http/reactions/notfound"],
+          "exceptionReactions": ["context/http/reactions/exception"]
         }
       }
     })
@@ -94,12 +96,52 @@ describe("reactor test", function(){
     })
   })
 
-  it("fires http request which has to be handled by crud reaction", function(next){
+  it("fires http request which has to be handled by crud list reaction", function(next){
     request.get({
         uri:"http://127.0.0.1:1337/users/crud/list",
         json: {}
       }, function(err, res, body){
-      expect(body.length).toBe(0)
+      expect(body.result.length).toBe(0)
+      next()
+    })
+  })
+
+  it("fires http request which has to be handled by crud get/:id reaction", function(next){
+    request.get({
+        uri:"http://127.0.0.1:1337/users/crud/123"
+      }, function(err, res, body){
+      expect(body).toBe("123");
+      next()
+    })
+  })
+
+  it("fires http request which has to be handled by crud get/:id/:slug reaction", function(next){
+    request.get({
+        uri:"http://127.0.0.1:1337/users/crud/123/hmm"
+      }, function(err, res, body){
+      expect(body).toBe("123hmm");
+      next()
+    })
+  })
+
+
+  it("fires http request which has to be handled by crud create reaction", function(next){
+    request.post({
+        uri:"http://127.0.0.1:1337/users/crud/create",
+        json: {"email": "test", "password": "test"}
+      }, function(err, res, body){
+      expect(body.result.email).toBe("test")
+      testUser = body.result;
+      next()
+    })
+  })
+
+  it("fires http request which has to be handled by crud create reaction", function(next){
+    request.del({
+        uri:"http://127.0.0.1:1337/users/crud/"+testUser._id,
+        json: {}
+      }, function(err, res, body){
+      expect(body.result.email).toBe("test")
       next()
     })
   })

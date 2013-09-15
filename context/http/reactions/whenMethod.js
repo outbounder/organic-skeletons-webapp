@@ -1,4 +1,4 @@
-var alchemy = require("../../helpers/alchemy")
+var alchemy = require("organic-alchemy")
 
 module.exports = alchemy.whenMethod({
   "GET": function(req, res, next) {
