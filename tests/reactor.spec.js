@@ -46,7 +46,7 @@ describe("reactor test", function(){
           "test": "data"
         }
       }, function(err, res, body){
-      expect(body).toContain("Hello");
+      expect(res.headers.greeter).toBe("Hello World!")
       next()
     })
   })
@@ -81,7 +81,7 @@ describe("reactor test", function(){
         uri:"http://127.0.0.1:1337/users/result",
         json: {}
       }, function(err, res, body){
-      expect(body).toContain("augmented");
+      expect(body.augmented).toBe(true);
       next()
     })
   })

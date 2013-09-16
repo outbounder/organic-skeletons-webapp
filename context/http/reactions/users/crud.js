@@ -22,6 +22,9 @@ module.exports.init = function(plasma, config, url){
       mongoose.model("User", {
         email: String,
         password: String
-      }))
+      })),
+    function(c, next) {
+      console.log("this is just console log for reactions on users/crud path =>", c.req.url, c.res.result);
+    }
   )
 }
