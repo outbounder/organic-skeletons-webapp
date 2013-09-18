@@ -7,8 +7,12 @@
   },
   "dependencies": {
     "organic": "0.1.1",
-    "glob": "3.1.14",
-    "underscore": "1.4.4"
+    "organic-httpServer": "https://github.com/outbounder/organic-httpServer/archive/master.tar.gz",
+    "organic-httpReactor": "https://github.com/outbounder/organic-httpReactor/archive/master.tar.gz",
+    
+    "organic-alchemy": "https://github.com/outbounder/organic-alchemy/archive/master.tar.gz",
+    "organic-reactions-mongoose-crud": "https://github.com/outbounder/organic-reactions-mongoose-crud/archive/master.tar.gz",
+    "organic-reactions-rest": "https://github.com/outbounder/organic-reactions-rest/archive/master.tar.gz"
   },
   "devDependencies": {
     "jasmine-node": "latest",
