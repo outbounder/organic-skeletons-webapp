@@ -1,8 +1,8 @@
-var alchemy = require("organic-alchemy")
-var bodyParser = require("connect").bodyParser;
+var chain = require("organic-alchemy").http.chain
+var bodyParser = require("connect").bodyParser
 
 module.exports.init = function(plasma, config) {
-  return alchemy.chain([bodyParser(), function(c, next){
+  return chain([bodyParser(), function(c, next){
     c.res.setHeader("Greeter", "Hello World!");
     next()
   }])

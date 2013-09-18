@@ -1,6 +1,6 @@
-var alchemy = require("organic-alchemy")
+var switchByMethod = require("organic-alchemy").http.switchByMethod
 
-module.exports = alchemy.whenMethod({
+module.exports = switchByMethod({
   "GET": function(req, res, next) {
     res.end("Blah")
   }

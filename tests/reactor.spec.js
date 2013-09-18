@@ -28,13 +28,28 @@ describe("reactor test", function(){
           },
           "endReactions": ["context/http/reactions/notfound"],
           "exceptionReactions": ["context/http/reactions/exception"]
+        },
+        "SymLink": {
+          "source": "plasma/symLink",
+          "target": {
+            "node_modules": {
+              "context": "context"
+            }
+          }
         }
       }
     })
     instance.on("HttpServer", function(c){
       expect(c.server).toBeDefined();
-      require("mongoose").connect("localhost", "test-db")
-      next() 
+      var mongoose = require("mongoose")
+      mongoose.connect("localhost", "test-db", function(){
+        mongoose.connection.db.dropDatabase(function(){
+          mongoose.connect('localhost', "test-db", function(){
+            next() 
+          });
+        });  
+      })
+      
     });
     instance.plasma.emit({type: "build", "branch": "plasma"});
   })
@@ -59,6 +74,30 @@ describe("reactor test", function(){
         }
       }, function(err, res, body){
       expect(body).toContain("Not found");
+      next()
+    })
+  })
+
+  it("fires http request which has to be handled by crud list reaction as not authorized", function(next){
+    request.get({
+        uri:"http://127.0.0.1:1337/users/crud/list",
+        json: {}
+      }, function(err, res, body){
+      expect(body).toContain("Sorry")
+      expect(res.statusCode).toBe(401)
+      next()
+    })
+  })
+
+  it("fires http request which has to be handled by old-style-action reaction", function(next){
+    request.post({
+        uri:"http://127.0.0.1:1337/users/test-login",
+        json: {
+          "username": "data",
+          "password": "test"
+        }
+      }, function(err, res, body){
+      expect(body).toContain("USER");
       next()
     })
   })
@@ -101,7 +140,7 @@ describe("reactor test", function(){
         uri:"http://127.0.0.1:1337/users/crud/list",
         json: {}
       }, function(err, res, body){
-      expect(body.result.length).toBe(0)
+      expect(body.length).toBe(0)
       next()
     })
   })
@@ -110,7 +149,7 @@ describe("reactor test", function(){
     request.get({
         uri:"http://127.0.0.1:1337/users/crud/123"
       }, function(err, res, body){
-      expect(body).toBe("123");
+      expect(body).toContain("Cast to ObjectId failed");
       next()
     })
   })
@@ -130,18 +169,18 @@ describe("reactor test", function(){
         uri:"http://127.0.0.1:1337/users/crud/create",
         json: {"email": "test", "password": "test"}
       }, function(err, res, body){
-      expect(body.result.email).toBe("test")
-      testUser = body.result;
+      expect(body.email).toBe("test")
+      testUser = body;
       next()
     })
   })
 
-  it("fires http request which has to be handled by crud create reaction", function(next){
+  it("fires http request which has to be handled by crud delete reaction", function(next){
     request.del({
         uri:"http://127.0.0.1:1337/users/crud/"+testUser._id,
         json: {}
       }, function(err, res, body){
-      expect(body.result.email).toBe("test")
+      expect(body.email).toBe("test")
       next()
     })
   })
